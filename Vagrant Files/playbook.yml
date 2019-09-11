@@ -1,0 +1,63 @@
+---
+- hosts: all
+  become: true
+  vars_files:
+    - vars.yml
+  strategy: free
+  tasks:
+    - name: hack to resolve Problem with MergeList Issue
+      shell: 'find /var/lib/apt/lists -maxdepth 1 -type f -exec rm -v {} \;'
+    - name: update apt cache
+      shell: 'apt-get clean && apt-get update'
+    - name: preliminary installation
+      apt:
+        name: apt-transport-https
+        force: yes
+    - name: Add Google signing key
+      apt_key:
+        url: "https://packages.cloud.google.com/apt/doc/apt-key.gpg"
+        state: present
+    - name: Add the k8s APT repo
+      apt_repository:
+        repo: 'deb http://apt.kubernetes.io/ kubernetes-xenial main'
+        state: present
+    - name: update cache
+      shell: 'apt-get update'
+    - name: install packages
+      apt:
+        name: "{{ item }}"
+        state: installed
+        force: yes
+      with_items: "{{ PACKAGES }}"
+
+
+- hosts: all
+  become: true
+  strategy: free
+  tasks:
+    - name: Add the longsleep repo
+      apt_repository:
+        repo: 'ppa:longsleep/golang-backports'
+        state: present
+    - name: update apt cache directly
+      shell: 'apt-get update'
+      args:
+        warn: False
+    - name: Install Go
+      apt:
+        name: golang-go
+        state: present
+        force: yes
+    - name: Install crictl
+      shell: 'go get github.com/kubernetes-incubator/cri-tools/cmd/crictl'
+      become_user: vagrant
+    - name: Create symlink
+      file:
+        src: /home/vagrant/go/bin/crictl
+        dest: /usr/local/bin/crictl
+        state: link
+    - name: Set hostname properly
+      shell: "hostname n$((1 + $(ifconfig | grep 192.168 | awk '{print $2}' | tail -c 2)))"
+    - name: Turn off swap
+      shell: 'swapoff -a'
+
