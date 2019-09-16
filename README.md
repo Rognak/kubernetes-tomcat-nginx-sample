@@ -152,6 +152,7 @@ data:
 Далее, выполните команду
 ```
 vagrant@n1~/manifests $ kubectl create -f ConfigMap.yml
+```
 
 Проверим состояние сервиса командой:
 ```sh
