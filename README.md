@@ -84,7 +84,7 @@ vagrant@n1 $ sudo kubeadm init --pod-network-cidr=10.244.0.0/16 --apiserver-adve
   vagrant@n1 $ sudo chown $(id -u):$(id -g) $HOME/.kube/config
 ```
 
-## Настройка Pod сети.
+## Настройка Pod сети
 В качестве сети для подов будем использовать flannel.  
 Выполните команду в мастер ноде:
 ```sh
